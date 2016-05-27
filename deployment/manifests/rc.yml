@@ -20,4 +20,10 @@ spec:
         image: 127.0.0.1:5000/inu/river:0.1.0-SNAPSHOT
         ports:
         - containerPort: 7879
-      imagePullPolicy: Always
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: 7879
+          initialDelaySeconds: 15
+          timeoutSeconds: 1
