@@ -1,12 +1,18 @@
+import com.typesafe.sbt.packager.docker._
+
 name := "river"
 
 organization := "com.grandsys"
 
-version := "0.1.0"
+version := "0.1.0-SNAPSHOT"
 
 scalaVersion := "2.11.6"
 
+maintainer := "Henry Jao"
+
 crossScalaVersions := Seq("2.10.6", "2.11.6")
+
+packageName in Docker := packageName.value
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("releases"),
@@ -46,3 +52,22 @@ scalacOptions ++= Seq(
     "-Xfuture")
 
 initialCommands := "import com.grandsys.river._"
+
+enablePlugins(JavaAppPackaging, DockerPlugin)
+
+packageName := "river"
+
+dockerRepository := Some("127.0.0.1:5000/inu")
+
+dockerCommands := Seq(
+  Cmd("FROM", "java:8-jdk-alpine"),
+  Cmd("MAINTAINER", maintainer.value),
+  ExecCmd("RUN", "apk", "add", "--no-cache", "bash"),
+  Cmd("WORKDIR", "/opt/docker"),
+  Cmd("ADD", "opt /opt"),
+  ExecCmd("RUN", "chown", "-R", "daemon:daemon", "."),
+  Cmd("USER", "daemon"),
+  Cmd("ENTRYPOINT", s"bin/${packageName.value}")
+)
+
+
