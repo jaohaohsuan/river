@@ -9,5 +9,5 @@ spec:
     name: river
   ports:
   - name: http
-    port: 80
+    port: 7879
     protocol: TCP
