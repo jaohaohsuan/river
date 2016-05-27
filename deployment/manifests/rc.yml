@@ -1,0 +1,22 @@
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: river
+  labels:
+    name: river
+spec:
+  replicas: 1
+  selector:
+    name: river
+  template:
+    metadata:
+      name: river
+      labels:
+        name: river
+    spec:
+      containers:
+      - name: river
+        image: 127.0.0.1:5000/inu/river:0.1.0-SNAPSHOT
+        ports:
+        - containerPort: 7879
