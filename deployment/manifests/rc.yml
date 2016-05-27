@@ -20,3 +20,4 @@ spec:
         image: 127.0.0.1:5000/inu/river:0.1.0-SNAPSHOT
         ports:
         - containerPort: 7879
+      imagePullPolicy: Always
