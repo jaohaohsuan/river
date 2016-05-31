@@ -46,16 +46,9 @@ scalacOptions ++= Seq(
     "-deprecation",
     "-encoding", "UTF-8",
     "-feature",
-    "-language:existentials",
     "-language:higherKinds",
     "-language:implicitConversions",
-    "-language:experimental.macros",
-    "-unchecked",
-    "-Xfatal-warnings",
-    "-Xlint",
-    "-Yinline-warnings",
-    "-Ywarn-dead-code",
-    "-Xfuture")
+    "-unchecked")
 
 initialCommands := "import com.grandsys.river._"
 

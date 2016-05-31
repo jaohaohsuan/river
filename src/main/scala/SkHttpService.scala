@@ -35,8 +35,10 @@ trait XmlUploadService extends Directives {
         roles <- getRoles(node)
         date <- getStartDateTime(sum)
       } yield date :: roles :: HNil) match {
-        case None => reject(RequestEntityExpectedRejection)
-        case Some(xs) => hprovide(xs)
+        case None =>
+          reject(RequestEntityExpectedRejection)
+        case Some(xs) =>
+          hprovide(xs)
       }
     }
   }
@@ -51,17 +53,15 @@ class SkHttpService extends HttpServiceActor with XmlUploadService with Json4sSu
 
   implicit val json4sFormats = org.json4s.DefaultFormats ++ org.json4s.ext.JodaTimeSerializers.all
 
-  implicit val executionContext = actorRefFactory.system.dispatcher
-
   implicit val myRejectionHandler = RejectionHandler {
     case RequestEntityExpectedRejection :: _ =>
-      complete(BadRequest)
+      complete(BadRequest, "fuck")
   }
 
   def receive = runRoute {
     path("ping") {
       get {
-        complete("pong")
+        complete(OK, "pong")
       }
     } ~
       path("stt" / "ami" / JavaUUID ) { uuid =>
@@ -70,7 +70,7 @@ class SkHttpService extends HttpServiceActor with XmlUploadService with Json4sSu
           CoNodeSeq{ (date, nodes) =>
             respondWithHeaders(RawHeader("id", s"$uuid"), RawHeader("index", date)) {
               respondWithMediaType(spray.http.MediaTypes.`text/plain`) {
-                complete(HttpResponse(OK, HttpEntity(s"$nodes")))
+                complete(OK, s"$nodes")
               }
             }
           }
