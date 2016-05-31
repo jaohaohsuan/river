@@ -1,9 +1,11 @@
-package com.grandsys.river
+package com.inu.river
+
 
 import akka.actor.{ActorSystem, Props}
 import akka.io.IO
 import com.typesafe.config.ConfigFactory
 import spray.can.Http
+import service.SkHttpService
 
 object Main extends App {
   implicit val system = ActorSystem()

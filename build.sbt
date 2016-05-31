@@ -12,6 +12,8 @@ maintainer := "Henry Jao"
 
 crossScalaVersions := Seq("2.10.6", "2.11.6")
 
+fork := true
+
 packageName in Docker := packageName.value
 
 resolvers ++= Seq(
@@ -29,11 +31,15 @@ libraryDependencies ++= Seq(
   "org.scalatest"       %% "scalatest"      % "2.2.6"   % "test",
   "org.scalacheck"      %% "scalacheck"     % "1.13.0"  % "test",
   "io.spray"            %%  "spray-can"     % sprayV,
+  "io.spray"            %%  "spray-httpx"   % sprayV,
   "io.spray"            %%  "spray-routing" % sprayV,
   "io.spray"            %%  "spray-testkit" % sprayV    % "test",
   "com.typesafe.akka"   %%  "akka-actor"    % akkaV,
   "com.typesafe.akka"   %%  "akka-testkit"  % akkaV     % "test",
-  "org.specs2"          %%  "specs2-core"   % "2.3.11"  % "test"
+  "org.specs2"          %%  "specs2-core"   % "2.3.11"  % "test",
+  "org.typelevel"       %%  "cats"          % "0.6.0",
+  "org.json4s"          %% "json4s-native"  % "3.3.0",
+  "org.json4s"          %% "json4s-ext"  % "3.3.0"
 )
 
 scalacOptions ++= Seq(
