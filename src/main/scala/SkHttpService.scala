@@ -9,6 +9,9 @@ import spray.http._
 import spray.httpx.Json4sSupport
 import spray.httpx.unmarshalling._
 import spray.routing._
+import spray.routing.directives.RouteDirectives._
+import spray.http.MediaTypes._
+
 import scala.util.Either
 import scala.xml.NodeSeq
 
@@ -25,7 +28,9 @@ trait XmlUploadService extends Directives {
   }
 
   val CoNodeSeq: Directive[String :: Seq[Role] :: HNil ] = xmls.flatMap {
-    case Left(ex) => reject(RequestEntityExpectedRejection)
+    case Left(ContentExpected)                   => reject(RequestEntityExpectedRejection)
+    case Left(UnsupportedContentType(supported)) => reject(UnsupportedRequestContentTypeRejection(supported))
+    case Left(MalformedContent(errorMsg, cause)) => reject(MalformedRequestContentRejection(errorMsg, cause))
     case Right(Nil) => reject
     case Right(ns) => {
       import com.inu.river.xml.Stt._
@@ -36,7 +41,7 @@ trait XmlUploadService extends Directives {
         date <- getStartDateTime(sum)
       } yield date :: roles :: HNil) match {
         case None =>
-          reject(RequestEntityExpectedRejection)
+          reject(ValidationRejection("START_DATETIME or RecognizeText missing"))
         case Some(xs) =>
           hprovide(xs)
       }
@@ -50,13 +55,9 @@ class SkHttpService extends HttpServiceActor with XmlUploadService with Json4sSu
   import spray.routing._
   import org.json4s._
   import org.json4s.native.JsonMethods._
+  import org.json4s.JsonDSL._
 
   implicit val json4sFormats = org.json4s.DefaultFormats ++ org.json4s.ext.JodaTimeSerializers.all
-
-  implicit val myRejectionHandler = RejectionHandler {
-    case RequestEntityExpectedRejection :: _ =>
-      complete(BadRequest, "fuck")
-  }
 
   def receive = runRoute {
     path("ping") {
@@ -67,14 +68,14 @@ class SkHttpService extends HttpServiceActor with XmlUploadService with Json4sSu
       path("stt" / "ami" / JavaUUID ) { uuid =>
         put {
           //authenticate(BasicAuth("sk")) { usr =>
-          CoNodeSeq{ (date, nodes) =>
-            respondWithHeaders(RawHeader("id", s"$uuid"), RawHeader("index", date)) {
-              respondWithMediaType(spray.http.MediaTypes.`text/plain`) {
-                complete(OK, s"$nodes")
+            CoNodeSeq { (date, nodes) =>
+              respondWithHeaders(RawHeader("id", s"$uuid"), RawHeader("index", date)) {
+                respondWithMediaType(`application/json`) {
+                  complete(OK, ("acknowledge" -> "true"): JValue)
+                }
               }
             }
-          }
-          //}
+            //}
         }
       }
   }
