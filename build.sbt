@@ -39,7 +39,8 @@ libraryDependencies ++= Seq(
   "org.specs2"          %%  "specs2-core"   % "2.3.11"  % "test",
   "org.typelevel"       %%  "cats"          % "0.6.0",
   "org.json4s"          %% "json4s-native"  % "3.3.0",
-  "org.json4s"          %% "json4s-ext"  % "3.3.0"
+  "org.json4s"          %% "json4s-ext"     % "3.3.0",
+  "com.github.nscala-time" %% "nscala-time" % "2.12.0"
 )
 
 scalacOptions ++= Seq(
@@ -48,6 +49,7 @@ scalacOptions ++= Seq(
     "-feature",
     "-language:higherKinds",
     "-language:implicitConversions",
+    "-language:postfixOps",
     "-unchecked")
 
 initialCommands := "import com.grandsys.river._"

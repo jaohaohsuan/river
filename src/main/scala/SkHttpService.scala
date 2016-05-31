@@ -4,6 +4,7 @@ package com.inu.river.service
   */
 
 import com.inu.river.xml.Role
+
 import spray.http.HttpHeaders.RawHeader
 import spray.http._
 import spray.httpx.Json4sSupport
@@ -11,6 +12,7 @@ import spray.httpx.unmarshalling._
 import spray.routing._
 import spray.routing.directives.RouteDirectives._
 import spray.http.MediaTypes._
+import org.joda.time.DateTime
 
 import scala.util.Either
 import scala.xml.NodeSeq
@@ -39,7 +41,8 @@ trait XmlUploadService extends Directives {
         node <- getRecognizeTextNode(sum)
         roles <- getRoles(node)
         date <- getStartDateTime(sum)
-      } yield date :: roles :: HNil) match {
+        indexName <- asIndex(date)
+      } yield indexName :: roles :: HNil) match {
         case None =>
           reject(ValidationRejection("START_DATETIME or RecognizeText missing"))
         case Some(xs) =>
@@ -68,10 +71,10 @@ class SkHttpService extends HttpServiceActor with XmlUploadService with Json4sSu
       path("stt" / "ami" / JavaUUID ) { uuid =>
         put {
           //authenticate(BasicAuth("sk")) { usr =>
-            CoNodeSeq { (date, nodes) =>
-              respondWithHeaders(RawHeader("id", s"$uuid"), RawHeader("index", date)) {
+            CoNodeSeq { (index, nodes) =>
+              respondWithHeader(RawHeader("Content-Location", s"$index/$uuid")) {
                 respondWithMediaType(`application/json`) {
-                  complete(OK, ("acknowledge" -> "true"): JValue)
+                  complete(OK, ("acknowledged" -> "true"): JValue)
                 }
               }
             }
