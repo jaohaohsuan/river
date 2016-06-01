@@ -15,10 +15,6 @@ fork := true
 
 packageName in Docker := packageName.value
 
-buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion)
-
-buildInfoPackage := "river"
-
 resolvers ++= Seq(
   Resolver.sonatypeRepo("releases"),
   Resolver.sonatypeRepo("snapshots"),
@@ -74,7 +70,7 @@ dockerCommands := Seq(
   Cmd("ENTRYPOINT", s"bin/${packageName.value}")
 )
 
-git.useGitDescribe := true
+git.useGitDescribe := false
 
 git.baseVersion := "0.1.0"
 
@@ -92,4 +88,7 @@ releaseProcess := Seq[ReleaseStep](
   releaseStepTask(org.clapper.sbt.editsource.EditSourcePlugin.autoImport.edit in EditSource)
 )
 
+buildInfoKeys := Seq[BuildInfoKey](name, version in ThisBuild, scalaVersion, sbtVersion)
+
+buildInfoPackage := "com.inu.river"
 

@@ -1,7 +1,6 @@
 package com.inu.river
 
 import scala.concurrent.duration._
-
 import akka.actor.{ActorSystem, Props}
 import akka.io.IO
 import com.typesafe.config.ConfigFactory
@@ -9,6 +8,7 @@ import spray.can.Http
 import service.SkHttpService
 import akka.pattern.ask
 import akka.util.Timeout
+import org.json4s.BuildInfo
 
 object Main extends App {
 
@@ -25,7 +25,7 @@ object Main extends App {
     .mapTo[Http.Event]
     .map {
       case Http.Bound(address) =>
-        println(s"river service bound to $address")
+        println(s"river service v${com.inu.river.BuildInfo.version} bound to $address")
       case Http.CommandFailed(cmd) =>
         println("river service could not bind to " +  s"$host:$port, ${cmd.failureMessage}")
         system.shutdown()
