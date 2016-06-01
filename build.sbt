@@ -75,6 +75,4 @@ dockerCommands := Seq(
   Cmd("ENTRYPOINT", s"bin/${packageName.value}")
 )
 
-useJGit
-
 

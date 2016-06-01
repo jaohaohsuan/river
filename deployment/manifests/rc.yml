@@ -17,10 +17,9 @@ spec:
     spec:
       containers:
       - name: river
-        image: 127.0.0.1:5000/inu/river:0.1.0-SNAPSHOT
+        image: 127.0.0.1:5000/inu/river
         ports:
         - containerPort: 7879
-        imagePullPolicy: Always
         livenessProbe:
           httpGet:
             path: /ping
