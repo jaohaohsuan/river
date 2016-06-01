@@ -4,17 +4,21 @@ name := "river"
 
 organization := "com.grandsys"
 
-version := "0.1.0-SNAPSHOT"
-
 scalaVersion := "2.11.6"
 
 maintainer := "Henry Jao"
 
 crossScalaVersions := Seq("2.10.6", "2.11.6")
 
+git.useGitDescribe := false
+
 fork := true
 
 packageName in Docker := packageName.value
+
+buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion)
+
+buildInfoPackage := "river"
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("releases"),
@@ -27,7 +31,7 @@ val akkaV = "2.3.9"
 val sprayV = "1.3.3"
 
 libraryDependencies ++= Seq(
-  "org.elasticsearch"   %  "elasticsearch"  % "2.3.1",
+  //"org.elasticsearch"   %  "elasticsearch"  % "2.3.1",
   "org.scalatest"       %% "scalatest"      % "2.2.6"   % "test",
   "org.scalacheck"      %% "scalacheck"     % "1.13.0"  % "test",
   "io.spray"            %%  "spray-can"     % sprayV,
@@ -52,9 +56,9 @@ scalacOptions ++= Seq(
     "-language:postfixOps",
     "-unchecked")
 
-initialCommands := "import com.grandsys.river._"
+initialCommands := "import com.inu.river._"
 
-enablePlugins(JavaAppPackaging, DockerPlugin)
+enablePlugins(JavaAppPackaging, DockerPlugin, GitVersioning, GitBranchPrompt, BuildInfoPlugin)
 
 packageName := "river"
 
@@ -70,5 +74,7 @@ dockerCommands := Seq(
   Cmd("USER", "daemon"),
   Cmd("ENTRYPOINT", s"bin/${packageName.value}")
 )
+
+useJGit
 
 
