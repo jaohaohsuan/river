@@ -72,13 +72,23 @@ dockerCommands := Seq(
 
 git.useGitDescribe := true
 
-sources in EditSource <++= baseDirectory.map(d => (d / "deployment" ** "*.yml").get)
+sources in EditSource <++= baseDirectory.map{ d =>
+  (d / "deployment" ** "*.yml").get ++
+  (d / "deployment" ** "*.sh").get
+}
+
 
 targetDirectory in EditSource <<= baseDirectory(_ / "target")
 
 flatten in EditSource := false
 
-variables in EditSource <+= version { version => ("version", version )}
+variables in EditSource <+= version { ver => ("version", ver )}
+
+//variables in EditSource += ("dockerTarget", dockerTarget.value)
+
+
+//variables in EditSource <++=
+
 
 releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies,
