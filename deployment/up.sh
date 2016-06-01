@@ -1,5 +1,8 @@
 #!/bin/bash
 
-if [ "$(kubectl describe rc river | grep 'Image(s)' | awk '{print $2}')" != "127.0.0.1:5000/inu/river:${version}" ]; then
-    kubectl rolling-update river --image=127.0.0.1:5000/inu/river:${version}
+kubectl apply -f deployment/manifests
+IMG1="$(kubectl describe rc river | grep 'Image(s)' | awk '{print $2}')"
+IMG2="127.0.0.1:5000/inu/river:${version}"
+if [ "${IMG1}" != "${IMG2}" ]; then
+    kubectl rolling-update river --image=${IMG2}
 fi
