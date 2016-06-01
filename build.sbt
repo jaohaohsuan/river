@@ -2,15 +2,13 @@ import com.typesafe.sbt.packager.docker._
 
 name := "river"
 
-organization := "com.grandsys"
+organization := "com.inu"
 
 scalaVersion := "2.11.6"
 
 maintainer := "Henry Jao"
 
 crossScalaVersions := Seq("2.10.6", "2.11.6")
-
-git.useGitDescribe := false
 
 fork := true
 
@@ -74,6 +72,10 @@ dockerCommands := Seq(
   Cmd("USER", "daemon"),
   Cmd("ENTRYPOINT", s"bin/${packageName.value}")
 )
+
+git.useGitDescribe := true
+
+git.baseVersion := "0.1.0"
 
 sources in EditSource <++= baseDirectory.map(d => (d / "deployment" ** "*.yml").get)
 
