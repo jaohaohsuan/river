@@ -1,4 +1,5 @@
 import com.typesafe.sbt.packager.docker._
+import ReleaseTransformations._
 
 name := "river"
 
@@ -84,4 +85,11 @@ targetDirectory in EditSource <<= baseDirectory(_ / "target")
 flatten in EditSource := false
 
 variables in EditSource <+= version { version => ("version", version )}
+
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  releaseStepTask(org.clapper.sbt.editsource.EditSourcePlugin.autoImport.clean in EditSource),
+  releaseStepTask(org.clapper.sbt.editsource.EditSourcePlugin.autoImport.edit in EditSource)
+)
+
 
