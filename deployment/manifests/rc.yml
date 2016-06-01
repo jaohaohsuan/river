@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: river
-        image: 127.0.0.1:5000/inu/river
+        image: 127.0.0.1:5000/inu/river:${version}
         ports:
         - containerPort: 7879
         livenessProbe:

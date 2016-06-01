@@ -75,4 +75,11 @@ dockerCommands := Seq(
   Cmd("ENTRYPOINT", s"bin/${packageName.value}")
 )
 
+sources in EditSource <++= baseDirectory.map(d => (d / "deployment" ** "*.yml").get)
+
+targetDirectory in EditSource <<= baseDirectory(_ / "target")
+
+flatten in EditSource := false
+
+variables in EditSource <+= version { version => ("version", version )}
 
