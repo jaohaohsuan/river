@@ -8,18 +8,43 @@ import scala.xml.{Elem, Node, NodeSeq}
 /**
   * Created by henry on 5/30/16.
   */
-trait Stt[T] {
-  def subject(): T
-}
 
-case class Role(name: String, items: NodeSeq)
+case class Role(name: String, sentences: Seq[Sentence])
+case class Sentence(text: String, times: Seq[Int])
 
-object RoleN {
+object Element {
 
-  def unapply(arg: Elem): Option[(String, NodeSeq)] = {
-    arg.attributes.get("Name").map(a => (a.text.trim, arg \\ "Item"))
+  object Role {
+
+    def unapply(arg: Elem): Option[(String, Seq[Sentence])] = {
+      val Items(sentences) = arg \\ "Item"
+      arg.attributes.get("Name").map(a => (a.text.trim, sentences))
+    }
+
+    object Item {
+      def unapply(arg: Node): Option[(String, Seq[Int])] =
+      (for {
+        literal <- """\d+""".r findAllIn (arg \ "Time").text
+        if !literal.isEmpty
+        num = literal.toInt
+      } yield num).toSeq match {
+        case Nil => None
+        case times => Some(((arg \ "Text").text, times))
+      }
+    }
+
+    object Items {
+      def unapply(arg: NodeSeq): Option[(Seq[Sentence])] = {
+        arg.map { case Item(text, times) => Sentence(text, times) } match {
+          case Nil => None
+          case sentences => Some(sentences)
+        }
+      }
+    }
   }
+
 }
+
 
 object Stt {
 
@@ -30,21 +55,19 @@ object Stt {
     }
 
   def getRoles(node: Node): Exception Either Seq[Role] = {
-    node.child.collect { case RoleN(n, items) => Role(n, items) } match {
+    node.child.collect { case Element.Role(name, sentences) => Role(name, sentences) } match {
       case Nil  => Left(new Exception("No Roles! Nonsense"))
       case roles => Right(roles)
     }
   }
 
   def getStartDateTime(ns: NodeSeq): Exception Either DateTime = {
-    import org.joda.time.format._
-
     ns \\ "START_DATETIME" headOption match {
       case None => Left(new Exception("Element 'START_DATETIME' missing"))
       case Some(dt) if dt.text.trim.isEmpty => Left(new Exception("'START_DATETIME' value is empty"))
       case Some(dt) => try {
-        Right(DateTime.parse(dt.text.trim))
-        //Right(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime(dt.text.trim))
+        import org.joda.time.format._
+        Right(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime(dt.text.trim))
       }
       catch {
         case e: IllegalArgumentException => Left(e)

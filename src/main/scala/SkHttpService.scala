@@ -40,6 +40,8 @@ class SkHttpService extends HttpServiceActor with XmlUploadService with Json4sSu
             CoNodeSeq { (index, nodes) =>
               respondWithHeader(RawHeader("Content-Location", s"$index/$uuid")) {
                 respondWithMediaType(`application/json`) {
+
+                  nodes.foreach(println)
                   complete(OK, ("acknowledged" -> "true"): JValue)
                 }
               }

@@ -19,7 +19,8 @@ trait XmlUploadService extends Directives {
 
   val SttFiles: Directive1[Either[DeserializationError, List[NodeSeq]]] = entity(as[MultipartContent]).hmap {
     case MultipartContent(parts) :: HNil =>
-      parts.map { case BodyPart(entity, _) => BasicUnmarshallers.NodeSeqUnmarshaller(entity) }.toList.sequenceU
+      parts.map { case BodyPart(entity, _) =>
+        BasicUnmarshallers.NodeSeqUnmarshaller(entity) }.toList.sequenceU
   }
 
   val CoNodeSeq: Directive[String :: Seq[Role] :: HNil ] = SttFiles.flatMap {
