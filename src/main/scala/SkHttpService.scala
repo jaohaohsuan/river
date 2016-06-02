@@ -37,12 +37,12 @@ class SkHttpService extends HttpServiceActor with XmlUploadService with Json4sSu
       path("stt" / "ami" / JavaUUID ) { uuid =>
         put {
           //authenticate(BasicAuth("sk")) { usr =>
-            CoNodeSeq { (index, nodes) =>
+            CoNodeSeq { (index, doc) =>
               respondWithHeader(RawHeader("Content-Location", s"$index/$uuid")) {
                 respondWithMediaType(`application/json`) {
 
-                  nodes.foreach(println)
-                  complete(OK, ("acknowledged" -> "true"): JValue)
+                  println(pretty(render(doc)))
+                  complete(OK, doc)
                 }
               }
             }

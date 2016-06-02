@@ -1,6 +1,8 @@
 package com.inu.river.service
 
-import com.inu.river.xml.Role
+import com.inu.river.xml.{JSONField, Role}
+import org.json4s.JValue
+import org.json4s.JsonAST.{JNull, JObject}
 import spray.http.{BodyPart, MultipartContent}
 import spray.httpx.unmarshalling.{BasicUnmarshallers, ContentExpected, DeserializationError, MalformedContent, UnsupportedContentType}
 import spray.routing._
@@ -23,7 +25,7 @@ trait XmlUploadService extends Directives {
         BasicUnmarshallers.NodeSeqUnmarshaller(entity) }.toList.sequenceU
   }
 
-  val CoNodeSeq: Directive[String :: Seq[Role] :: HNil ] = SttFiles.flatMap {
+  val CoNodeSeq: Directive[String :: JValue :: HNil ] = SttFiles.flatMap {
     case Left(ContentExpected)                   => reject(RequestEntityExpectedRejection)
     case Left(UnsupportedContentType(supported)) => reject(UnsupportedRequestContentTypeRejection(supported))
     case Left(MalformedContent(errorMsg, cause)) => reject(MalformedRequestContentRejection(errorMsg, cause))
@@ -36,7 +38,7 @@ trait XmlUploadService extends Directives {
         roles <- getRoles(node).right
         date <- getStartDateTime(combined).right
         indexName <- asIndex(date).right
-      } yield indexName :: roles :: HNil
+      } yield indexName :: roles.map{ e => JSONField.roleJV.map3(e) }.foldLeft(JObject()){ case (acc, o: JObject) => acc merge o} :: HNil
 
       result match {
         case Left(ex) =>

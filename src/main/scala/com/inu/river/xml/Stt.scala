@@ -10,15 +10,29 @@ import scala.xml.{Elem, Node, NodeSeq}
   */
 
 case class Role(name: String, sentences: Seq[Sentence])
-case class Sentence(text: String, times: Seq[Int])
+
+case class Sentence(id: String, text: String, times: Seq[Int])
 
 object Element {
 
   object Role {
 
+    val agentRole = """[R,r]0""".r
+    val customerRole = """[R,r]1""".r
+
     def unapply(arg: Elem): Option[(String, Seq[Sentence])] = {
-      val Items(sentences) = arg \\ "Item"
-      arg.attributes.get("Name").map(a => (a.text.trim, sentences))
+      for {
+        attr <- arg.attributes.get("Name")
+        rN = attr.text.trim()
+        id = rN match {
+          case agentRole() => "agent0"
+          case customerRole()  => "customer0"
+          case _ => ""
+        }
+        if id.nonEmpty
+        sentences: Seq[Sentence] = (arg \\ "Item").map { case Item(text, times) => Sentence(id, text, times) }
+        if sentences.nonEmpty
+      } yield (id, sentences)
     }
 
     object Item {
@@ -30,15 +44,6 @@ object Element {
       } yield num).toSeq match {
         case Nil => None
         case times => Some(((arg \ "Text").text, times))
-      }
-    }
-
-    object Items {
-      def unapply(arg: NodeSeq): Option[(Seq[Sentence])] = {
-        arg.map { case Item(text, times) => Sentence(text, times) } match {
-          case Nil => None
-          case sentences => Some(sentences)
-        }
       }
     }
   }
