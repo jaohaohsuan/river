@@ -23,29 +23,37 @@ object RoleN {
 
 object Stt {
 
-  def getRecognizeTextNode(ns: NodeSeq): Option[Node] =
-    ns \\ "Subject" find { n => (n \ "@Name").text == "RecognizeText" }
-
-  def getRoles(node: Node): Option[Seq[Role]] = Some(node.child.collect { case RoleN(n, items) => Role(n, items) })
-
-  def getStartDateTime(ns: NodeSeq): Option[DateTime] = {
-    import org.joda.time.format._
-    def toDateTime(text: String):Option[DateTime] = {
-      try {
-        Some(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime(text))
-      }
-      catch {
-        case e: IllegalArgumentException => None
-        case e: UnsupportedOperationException => None
-      }
+  def getRecognizeTextNode(ns: NodeSeq): Exception Either Node =
+    ns \\ "Subject" find { n => (n \ "@Name").text == "RecognizeText" } match {
+      case None => Left(new Exception("There is no element like: '<Subject Name=\"RecognizeText\">'"))
+      case Some(ns) => Right(ns)
     }
-    for {
-     el <- (ns \\ "START_DATETIME").headOption
-     dt <- toDateTime(el.text.trim)
-    } yield dt
+
+  def getRoles(node: Node): Exception Either Seq[Role] = {
+    node.child.collect { case RoleN(n, items) => Role(n, items) } match {
+      case Nil  => Left(new Exception("No Roles! Nonsense"))
+      case roles => Right(roles)
+    }
   }
 
-  def asIndex(date: DateTime): Option[String] = {
+  def getStartDateTime(ns: NodeSeq): Exception Either DateTime = {
+    import org.joda.time.format._
+
+    ns \\ "START_DATETIME" headOption match {
+      case None => Left(new Exception("Element 'START_DATETIME' missing"))
+      case Some(dt) if dt.text.trim.isEmpty => Left(new Exception("'START_DATETIME' value is empty"))
+      case Some(dt) => try {
+        Right(DateTime.parse(dt.text.trim))
+        //Right(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime(dt.text.trim))
+      }
+      catch {
+        case e: IllegalArgumentException => Left(e)
+        case e: UnsupportedOperationException => Left(e)
+      }
+    }
+  }
+
+  def asIndex(date: DateTime): Exception Either String = {
     val fmt = new DateTimeFormatterBuilder()
       .appendLiteral("log-")
       .appendYear(4,4)
@@ -56,9 +64,9 @@ object Stt {
       .toFormatter
 
      if ("""^log-\d{4}\.\d{2}\.\d{2}$""".r.pattern.matcher(date.toString(fmt)).matches)
-       Some(date.toString(fmt))
+       Right(date.toString(fmt))
      else
-      None
+      Left(new Exception(s"$date mismatching 'log-yyyy.MM.dd'"))
   }
 
 }
