@@ -22,18 +22,17 @@ trait XmlUploadService extends Directives {
 
   val SttFiles: Directive1[Either[DeserializationError, List[NodeSeq]]] = entity(as[MultipartContent]).hmap {
     case MultipartContent(parts) :: HNil =>
-      val `type=application/xml; charset=utf-8` = ContentType(`application/xml`, `UTF-8`)
-      parts.map {
-        case BodyPart(entity: HttpEntity.NonEmpty, _) =>
-          BasicUnmarshallers.NodeSeqUnmarshaller(entity) }
-          .toList.sequenceU
+      (for {
+        BodyPart(entity@HttpEntity.NonEmpty(ContentType(mediaType, _), data), _) <- parts
+        ns = BasicUnmarshallers.NodeSeqUnmarshaller(entity.copy(contentType = ContentType(mediaType, `UTF-8`)))
+      } yield ns).toList.sequenceU
   }
 
   val CoNodeSeq: Directive[String :: JValue :: HNil ] = SttFiles.flatMap {
     case Left(ContentExpected)                   => reject(RequestEntityExpectedRejection)
     case Left(UnsupportedContentType(supported)) => reject(UnsupportedRequestContentTypeRejection(supported))
     case Left(MalformedContent(errorMsg, cause)) => reject(MalformedRequestContentRejection(errorMsg, cause))
-    case Right(Nil) => reject
+    case Right(Nil) => reject()
     case Right(ns) => {
       import com.inu.river.xml.Stt._
       val combined = ns.reduce(_ ++ _)
