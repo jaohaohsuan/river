@@ -10,8 +10,11 @@ import scala.xml.{Elem, Node, NodeSeq}
   */
 
 case class Role(name: String, sentences: Seq[Sentence])
+case class Dialogs(sentences: Seq[Sentence])
+case class Vtt(sentences: Seq[Sentence])
 
-case class Sentence(id: String, text: String, times: Seq[Int])
+case class Sentence(id: String, text: String, times: Seq[Int], role: String)
+//case class VttSentence(id: String, text: String, times: Seq[Int])
 
 object Element {
 
@@ -30,7 +33,7 @@ object Element {
           case _ => ""
         }
         if id.nonEmpty
-        sentences: Seq[Sentence] = (arg \\ "Item").map { case Item(text, times) => Sentence(id, text, times) }
+        sentences: Seq[Sentence] = (arg \\ "Item").map { case Item(text, times) => Sentence(id, text, times, rN) }
         if sentences.nonEmpty
       } yield (id, sentences)
     }
@@ -59,10 +62,12 @@ object Stt {
       case Some(ns) => Right(ns)
     }
 
-  def getRoles(node: Node): Exception Either Seq[Role] = {
+  def getRoles(node: Node): Exception Either List[Role] = {
     node.child.collect { case Element.Role(name, sentences) => Role(name, sentences) } match {
       case Nil  => Left(new Exception("No Roles! Nonsense"))
-      case roles => Right(roles)
+      case roles =>
+        //Role("dialogs", roles.flatMap{ e => e.sentences }.sortBy { case Sentence(_, _, x :: xs) => x })
+        Right(roles.toList)
     }
   }
 

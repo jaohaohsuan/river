@@ -26,7 +26,7 @@ val akkaV = "2.3.9"
 val sprayV = "1.3.3"
 
 libraryDependencies ++= Seq(
-  //"org.elasticsearch"   %  "elasticsearch"  % "2.3.1",
+  "org.elasticsearch"   %  "elasticsearch"  % "2.3.1",
   "org.scalatest"       %% "scalatest"      % "2.2.6"   % "test",
   "org.scalacheck"      %% "scalacheck"     % "1.13.0"  % "test",
   "io.spray"            %%  "spray-can"     % sprayV,
