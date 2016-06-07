@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: river-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: river
+    spec:
+      containers:
+      - name: nginx
+        image: 127.0.0.1:5000/inu/river:${version}
+        ports:
+        - containerPort: 7879
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: 7879
+          initialDelaySeconds: 15
+          timeoutSeconds: 1
+        env:
+        - name: ES_TRANSPORT_ADDRESS
+          value: elasticsearch-discovery.default.svc.cluster.local
+        - name: ES_CLUSTER_NAME
+          value: myesdb
