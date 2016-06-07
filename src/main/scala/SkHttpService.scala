@@ -49,15 +49,12 @@ class SkHttpService(val client: org.elasticsearch.client.Client) extends HttpSer
             SttDoc { (index, doc) =>
               respondWithHeader(RawHeader("Content-Location", s"$index/$uuid")) {
                 respondWithMediaType(`application/json`) {
+                  import org.json4s.JsonDSL._
                   onComplete(write(compact(render(doc)), index, s"$uuid")) {
-                    case scala.util.Success(res) => complete(OK, s"""{ "acknowledged": true, "created" : ${res.isCreated} }""")
-                    case Failure(ex) => complete(BadRequest, s"""{
-                                                                 |  "error" :
-                                                                 |  {
-                                                                 |    "title" : "prepareUpdate"
-                                                                 |    "message" : "${ex.getMessage}"
-                                                                 |  }
-                                                                 |}""".stripMargin)
+                    case scala.util.Success(res) => complete(OK, ("acknowledged" -> true) ~~
+                                                                 ("created"      -> res.isCreated))
+                    case Failure(ex) => complete(BadRequest, "error" -> ("title"   -> "prepareUpdate") ~~
+                                                                        ("message" -> ex.getMessage))
                   }
                 }
               }
