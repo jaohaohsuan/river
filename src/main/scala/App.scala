@@ -27,7 +27,7 @@ object Main extends App {
   val client = TransportClient.builder().settings(settings).build()
     .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(config.getString("elasticsearch.transport-address")), 9300))
 
-  val skListener = system.actorOf(Props(classOf[SkHttpService]), "service")
+  val skListener = system.actorOf(Props(classOf[SkHttpService], client), "service")
 
   val host = "0.0.0.0"
   val port = ConfigFactory.load().getInt("http.port")

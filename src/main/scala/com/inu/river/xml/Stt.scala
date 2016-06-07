@@ -14,7 +14,6 @@ case class Dialogs(sentences: Seq[Sentence])
 case class Vtt(sentences: Seq[Sentence])
 
 case class Sentence(id: String, text: String, times: Seq[Int], role: String)
-//case class VttSentence(id: String, text: String, times: Seq[Int])
 
 object Element {
 
