@@ -28,6 +28,6 @@ spec:
           timeoutSeconds: 1
         env:
           - name: ES_TRANSPORT_ADDRESS
-            value: elasticsearch-discovery
+            value: elasticsearch-discovery.default.svc.cluster.local
           - name: ES_CLUSTER_NAME
             value: myesdb
