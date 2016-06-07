@@ -5,7 +5,6 @@ package com.inu.river.service
 
 import org.elasticsearch.action.update.UpdateResponse
 import org.elasticsearch.action.{ActionListener, ListenableActionFuture}
-import org.json4s.JValue
 import org.json4s.native.JsonMethods._
 import spray.http.HttpHeaders.RawHeader
 import spray.http.MediaTypes._
@@ -14,8 +13,8 @@ import spray.httpx.Json4sSupport
 import spray.routing._
 
 import scala.concurrent.{Future, Promise}
-import scala.util.{Failure, Success }
-
+import scala.util.{Failure }
+import org.json4s.JsonDSL._
 
 class SkHttpService(val client: org.elasticsearch.client.Client) extends HttpServiceActor with XmlUploadService with Json4sSupport {
 
@@ -49,12 +48,14 @@ class SkHttpService(val client: org.elasticsearch.client.Client) extends HttpSer
             SttDoc { (index, doc) =>
               respondWithHeader(RawHeader("Content-Location", s"$index/$uuid")) {
                 respondWithMediaType(`application/json`) {
-                  import org.json4s.JsonDSL._
+                  parameters('dry ! "true") {
+                    complete(OK,doc)
+                  } ~
                   onComplete(write(compact(render(doc)), index, s"$uuid")) {
                     case scala.util.Success(res) => complete(OK, ("acknowledged" -> true) ~~
-                                                                 ("created"      -> res.isCreated))
+                      ("created"      -> res.isCreated))
                     case Failure(ex) => complete(BadRequest, "error" -> ("title"   -> "prepareUpdate") ~~
-                                                                        ("message" -> ex.getMessage))
+                      ("message" -> ex.getMessage))
                   }
                 }
               }

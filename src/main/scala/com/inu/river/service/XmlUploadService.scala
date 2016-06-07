@@ -34,7 +34,7 @@ trait XmlUploadService extends Directives {
       import com.inu.river.xml.json4sImplicits._
       import com.inu.river.xml.JSONValue._
 
-      def toJson[A](la: List[A])(implicit ja: JSONValue[A]) = Foldable[List].foldMap(la)(implicitly[JSONValue[A]].marshalling)
+      def toJson[A: JSONValue](la: List[A]) = Foldable[List].foldMap(la)(implicitly[JSONValue[A]].marshalling)
 
       val combined = ns.reduce(_ ++ _)
       val result = for {
