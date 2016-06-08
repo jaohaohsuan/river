@@ -34,31 +34,24 @@ class SkHttpService(val client: org.elasticsearch.client.Client) extends HttpSer
     }
   }
 
-  def write(doc: String,index: String,id: String): Future[UpdateResponse] = client.prepareUpdate(index, "ami", id).setDoc(doc).setUpsert(doc).execute().future
+  def write(doc: String,index: String, dataSource: String, id: String): Future[UpdateResponse] = client.prepareUpdate(index, dataSource, id).setDoc(doc).setUpsert(doc).execute().future
 
   def receive = runRoute {
     path("ping") {
       get {
-        clientIP { ip =>
-          println("Client's ip is " + ip.toOption.map(_.getHostAddress).getOrElse("unknown"))
-          complete(OK, "pong")
-        }
+        complete(OK, "pong")
       }
     } ~
-      path("stt" / "ami" / JavaUUID ) { uuid =>
+      path("stt" / Segment / JavaUUID ) { (dataSource, uuid) =>
         put {
           //authenticate(BasicAuth("sk")) { usr =>
             SttDoc { (index, doc) =>
               respondWithHeader(RawHeader("Content-Location", s"$index/$uuid")) {
                 respondWithMediaType(`application/json`) {
                   parameters('dry ! "true") {
-                    clientIP { ip =>
-                      val ipString = ip.toOption.map(_.getHostAddress).getOrElse("unknown")
-                      println(ipString)
                       complete(OK,doc)
-                    }
                   } ~
-                  onComplete(write(compact(render(doc)), index, s"$uuid")) {
+                  onComplete(write(compact(render(doc)), index, dataSource, s"$uuid")) {
                     case scala.util.Success(res) => complete(OK, ("acknowledged" -> true) ~~
                       ("created"      -> res.isCreated))
                     case Failure(ex) => complete(BadRequest, "error" -> ("title"   -> "prepareUpdate") ~~
