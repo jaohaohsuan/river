@@ -39,7 +39,10 @@ class SkHttpService(val client: org.elasticsearch.client.Client) extends HttpSer
   def receive = runRoute {
     path("ping") {
       get {
-        complete(OK, "pong")
+        clientIP { ip =>
+          println("Client's ip is " + ip.toOption.map(_.getHostAddress).getOrElse("unknown"))
+          complete(OK, "pong")
+        }
       }
     } ~
       path("stt" / "ami" / JavaUUID ) { uuid =>
