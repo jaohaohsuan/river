@@ -49,7 +49,11 @@ class SkHttpService(val client: org.elasticsearch.client.Client) extends HttpSer
               respondWithHeader(RawHeader("Content-Location", s"$index/$uuid")) {
                 respondWithMediaType(`application/json`) {
                   parameters('dry ! "true") {
-                    complete(OK,doc)
+                    clientIP { ip =>
+                      val ipString = ip.toOption.map(_.getHostAddress).getOrElse("unknown")
+                      println(ipString)
+                      complete(OK,doc)
+                    }
                   } ~
                   onComplete(write(compact(render(doc)), index, s"$uuid")) {
                     case scala.util.Success(res) => complete(OK, ("acknowledged" -> true) ~~

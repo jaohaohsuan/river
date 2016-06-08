@@ -19,8 +19,8 @@ object Element {
 
   object Role {
 
-    val agentRole = """[R,r]0""".r
-    val customerRole = """[R,r]1""".r
+    val agentRole = """[R,r]1""".r
+    val customerRole = """[R,r]0""".r
 
     def unapply(arg: Elem): Option[(String, Seq[Sentence])] = {
       for {
