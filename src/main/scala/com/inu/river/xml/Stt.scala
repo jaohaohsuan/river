@@ -20,7 +20,7 @@ object Element {
   object Role {
 
     val agentRole = """[R,r]1""".r
-    val customerRole = """[R,r]0""".r
+    val customerRole = """[R,r]""".r
 
     def unapply(arg: Elem): Option[(String, Seq[Sentence])] = {
       for {
@@ -70,10 +70,10 @@ object Stt {
     }
   }
 
-  def getStartDateTime(ns: NodeSeq): Exception Either DateTime = {
-    ns \\ "START_DATETIME" headOption match {
-      case None => Left(new Exception("Element 'START_DATETIME' missing"))
-      case Some(dt) if dt.text.trim.isEmpty => Left(new Exception("'START_DATETIME' value is empty"))
+  def getDateTime(ns: NodeSeq, attribute: String): Exception Either DateTime = {
+    ns \\ attribute headOption match {
+      case None => Left(new Exception(s"Element '$attribute' missing"))
+      case Some(dt) if dt.text.trim.isEmpty => Left(new Exception(s"'$attribute' value is empty"))
       case Some(dt) => try {
         import org.joda.time.format._
         Right(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime(dt.text.trim))
@@ -87,7 +87,7 @@ object Stt {
 
   def asIndex(date: DateTime): Exception Either String = {
     val fmt = new DateTimeFormatterBuilder()
-      .appendLiteral("log-")
+      .appendLiteral("logs-")
       .appendYear(4,4)
       .appendLiteral('.')
       .appendMonthOfYear(2)
@@ -95,10 +95,10 @@ object Stt {
       .appendDayOfMonth(2)
       .toFormatter
 
-     if ("""^log-\d{4}\.\d{2}\.\d{2}$""".r.pattern.matcher(date.toString(fmt)).matches)
+     if ("""^logs-\d{4}\.\d{2}\.\d{2}$""".r.pattern.matcher(date.toString(fmt)).matches)
        Right(date.toString(fmt))
      else
-      Left(new Exception(s"$date mismatching 'log-yyyy.MM.dd'"))
+      Left(new Exception(s"$date mismatching 'logs-yyyy.MM.dd'"))
   }
 
 }

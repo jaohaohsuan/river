@@ -1,10 +1,12 @@
 package com.inu.river.service
 
 import com.inu.river.xml.{Dialogs, JSONValue, Sentence, Vtt}
+import org.joda.time.DateTime
 import spray.http.{BodyPart, ContentType, HttpEntity, MultipartContent}
 import spray.httpx.unmarshalling.{BasicUnmarshallers, ContentExpected, DeserializationError, MalformedContent, UnsupportedContentType}
 import spray.routing._
 import spray.http.HttpCharsets._
+
 import scala.util.Either
 import scala.xml.NodeSeq
 
@@ -36,14 +38,28 @@ trait XmlUploadService extends Directives {
 
       def toJson[A: JSONValue](la: List[A]) = Foldable[List].foldMap(la)(implicitly[JSONValue[A]].marshalling)
 
+      def decomposeDate(start: DateTime, end: DateTime): JObject = {
+
+        import org.json4s.JsonDSL._
+          ("startTime" -> start.toString("yyyy-MM-dd'T'HH:mm:ssZ")) ~~
+          ("endTime"   -> end.toString("yyyy-MM-dd'T'HH:mm:ssZ")) ~~
+          ("year"      -> start.getYear) ~~
+          ("quarter"   -> (start.getMonthOfYear + 2) / 3) ~~
+          ("month"     -> start.getMonthOfYear) ~~
+          ("weekNum"   -> start.getWeekOfWeekyear) ~~
+          ("weekDay"   -> start.getDayOfWeek) ~~
+          ("monthDay"  -> start.getDayOfMonth)
+      }
+
       val combined = ns.reduce(_ ++ _)
       val result = for {
-        node <- getRecognizeTextNode(combined).right
-        roles <- getRoles(node).right
-        date <- getStartDateTime(combined).right
-        indexName <- asIndex(date).right
-        mixed <- Right(roles.flatMap{ r => r.sentences }.sortBy{ case Sentence(_, _, begin +: _, _) => begin }).right
-      } yield indexName :: toJson(roles).merge(toJson(Dialogs(mixed) :: Nil)).merge(toJson(Vtt(mixed) :: Nil))  :: HNil
+        node      <- getRecognizeTextNode(combined).right
+        roles     <- getRoles(node).right
+        start     <- getDateTime(combined, "START_DATETIME").right
+        end       <- getDateTime(combined, "END_DATETIME").right
+        indexName <- asIndex(start).right
+        mixed     <- Right(roles.flatMap { r => r.sentences }.sortBy { case Sentence(_, _, begin +: _, _) => begin }).right
+      } yield indexName :: toJson(roles).merge(toJson(Dialogs(mixed) :: Nil)).merge(toJson(Vtt(mixed) :: Nil)).merge(decomposeDate(start, end)) :: HNil
 
       result match {
         case Left(ex) => reject(ValidationRejection(ex.getMessage))
@@ -51,6 +67,5 @@ trait XmlUploadService extends Directives {
       }
     }
   }
-
 
 }

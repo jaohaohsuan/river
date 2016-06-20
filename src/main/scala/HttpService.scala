@@ -16,7 +16,7 @@ import scala.concurrent.{Future, Promise}
 import scala.util.{Failure }
 import org.json4s.JsonDSL._
 
-class SkHttpService(val client: org.elasticsearch.client.Client) extends HttpServiceActor with XmlUploadService with Json4sSupport {
+class HttpService(val client: org.elasticsearch.client.Client) extends HttpServiceActor with XmlUploadService with Json4sSupport {
 
   import StatusCodes._
 
