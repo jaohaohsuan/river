@@ -42,7 +42,7 @@ class HttpService(val client: org.elasticsearch.client.Client) extends HttpServi
         complete(OK, "pong")
       }
     } ~
-      path("stt" / Segment / JavaUUID ) { (dataSource, uuid) =>
+      path("stt" / Segment / Segment ) { (dataSource, uuid) =>
         put {
           //authenticate(BasicAuth("sk")) { usr =>
             SttDoc { (index, doc) =>
