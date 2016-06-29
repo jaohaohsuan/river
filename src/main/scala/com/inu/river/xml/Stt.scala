@@ -112,16 +112,13 @@ object Stt {
   }
 
   def getConversationInfo(ns: NodeSeq, key: String): Exception Either String = {
-    ns \\ "CONVERSATION_INFO" headOption match {
-      case Some(nss: NodeSeq) => {
-        val matchedElement = nss.find { el => (el \ "CONVERSATION_ATTRIBUTE_KEY" headOption).exists(_.text.trim == key) }
-        matchedElement.flatMap { el =>
-            (el \\ "CONVERSATION_ATTRIBUTE_VALUE" headOption).map(_.text.trim).map(Right(_))
-          }.getOrElse(Right(""))
-      }
-      case None =>
-        Right("")
-    }
+    val result = for {
+      n <- ns \ "CONVERSATION_INFO"
+      el <- n \ "CONVERSATION_ATTRIBUTE_KEY"
+      value <- n \ "CONVERSATION_ATTRIBUTE_VALUE"
+      if el.text.trim == key
+    } yield value.text.trim
+    result.headOption.map(Right(_)).getOrElse(Right(""))
   }
 
   def asIndex(date: DateTime): Exception Either String = {
