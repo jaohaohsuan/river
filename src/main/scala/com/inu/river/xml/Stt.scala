@@ -92,15 +92,22 @@ object Stt {
     }
   }
 
-  def getAudioInfo(ns: NodeSeq, elementName: String): Exception Either Long = {
-    ns \\ "AUDIO_INFO" \ elementName headOption match {
-      case None => Left(new Exception(s"$elementName can not find"))
+  def getAudioDuration(ns: NodeSeq): Exception Either Long = {
+    ns \\ "AUDIO_INFO" \ "AUDIO_DURATION" headOption match {
+      case None => Left(new Exception(s"AUDIO_DURATION can not find"))
       case Some(el) => try {
         Right((el.text.trim().toDouble * 1000).toLong)
       }
       catch {
         case ex: Exception => Left(ex)
       }
+    }
+  }
+
+  def getAudioInfo(ns: NodeSeq, elementName: String): Exception Either String = {
+    ns \\ "AUDIO_INFO" \ elementName headOption match {
+      case None => Right("")
+      case Some(el) => Right(el.text.trim)
     }
   }
 

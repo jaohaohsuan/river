@@ -57,18 +57,23 @@ trait XmlUploadService extends Directives {
         roles     <- getRoles(node).right
         start     <- getDateTime(combined, "START_DATETIME").right
         end       <- getDateTime(combined, "END_DATETIME").right
-        length    <- getAudioInfo(combined, "AUDIO_DURATION").right
+        length    <- getAudioDuration(combined).right
         agentPhoneNo <- getAudioInfo(combined, "OPERATOR_PHONENUMBER").right
         agentId   <- getUserInfo(combined, "USER_ID").right
         agentName <- getUserInfo(combined, "USER_NAME").right
         callDirection <- getConversationInfo(combined, "amivoice.common.direction").right
+        customerPhoneNo <- getConversationInfo(combined, "amivoice.common.customer.phonenumber").right
+        customerGender <- getConversationInfo(combined, "amivoice.common.customer.gender").right
         indexName <- asIndex(start).right
         mixed     <- Right(roles.flatMap { r => r.sentences }.sortBy { case Sentence(_, _, begin +: _, _) => begin }).right
       } yield {
         import org.json4s.JsonDSL._
         val audioInfo: JObject = "length" -> length
         val userInfo = ("agentId" -> agentId) ~~ ("agentName" -> agentName)
-        val conversationInfo = ("callDirection" -> callDirection) ~~ ("agentPhoneNo" -> agentPhoneNo)
+        val conversationInfo = ("callDirection" -> callDirection) ~~
+                               ("agentPhoneNo" -> agentPhoneNo) ~~
+                               ("customerPhoneNo" -> customerPhoneNo) ~~
+                               ("customerGender" -> customerGender)
         val extra = decomposeDate(start, end) ~~ audioInfo ~~ userInfo ~~ conversationInfo
         indexName :: toJson(roles).merge(toJson(Dialogs(mixed) :: Nil)).merge(toJson(Vtt(mixed) :: Nil)).merge(extra) :: HNil
       }
