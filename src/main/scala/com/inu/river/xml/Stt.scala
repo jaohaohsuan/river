@@ -85,8 +85,36 @@ object Stt {
     }
   }
 
-  def getUserId(ns: NodeSeq, attribute: String): Exception Either String = {
-    Right("")
+  def getUserInfo(ns: NodeSeq, elementName: String): Exception Either String = {
+     ns \\ "USER_INFO" \ elementName headOption match {
+      case None => Right("")
+      case Some(el) => Right(el.text.trim())
+    }
+  }
+
+  def getAudioInfo(ns: NodeSeq, elementName: String): Exception Either Long = {
+    ns \\ "AUDIO_INFO" \ elementName headOption match {
+      case None => Left(new Exception(s"$elementName can not find"))
+      case Some(el) => try {
+        Right((el.text.trim().toDouble * 1000).toLong)
+      }
+      catch {
+        case ex: Exception => Left(ex)
+      }
+    }
+  }
+
+  def getConversationInfo(ns: NodeSeq, key: String): Exception Either String = {
+    ns \\ "CONVERSATION_INFO" headOption match {
+      case Some(nss: NodeSeq) => {
+        val matchedElement = nss.find { el => (el \ "CONVERSATION_ATTRIBUTE_KEY" headOption).exists(_.text.trim == key) }
+        matchedElement.flatMap { el =>
+            (el \\ "CONVERSATION_ATTRIBUTE_VALUE" headOption).map(_.text.trim).map(Right(_))
+          }.getOrElse(Right(""))
+      }
+      case None =>
+        Right("")
+    }
   }
 
   def asIndex(date: DateTime): Exception Either String = {
