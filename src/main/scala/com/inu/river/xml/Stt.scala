@@ -20,7 +20,7 @@ object Element {
   object Role {
 
     val agentRole = """[R,r]1""".r
-    val customerRole = """[R,r]""".r
+    val customerRole = """[R,r]0""".r
 
     def unapply(arg: Elem): Option[(String, Seq[Sentence])] = {
       for {
@@ -83,6 +83,10 @@ object Stt {
         case e: UnsupportedOperationException => Left(e)
       }
     }
+  }
+
+  def getUserId(ns: NodeSeq, attribute: String): Exception Either String = {
+    Right("")
   }
 
   def asIndex(date: DateTime): Exception Either String = {
