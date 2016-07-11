@@ -1,6 +1,7 @@
 package com.inu.river
 
 import java.net.InetAddress
+import java.util.Calendar
 
 import scala.concurrent.duration._
 import akka.actor.{ActorSystem, Props}
@@ -13,6 +14,7 @@ import akka.util.Timeout
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse
 import org.elasticsearch.client.transport.TransportClient
 import org.elasticsearch.common.transport.InetSocketTransportAddress
+import org.joda.time.DateTime
 
 
 object Main extends App {
@@ -47,6 +49,9 @@ object Main extends App {
     client.close()
     system.shutdown()
   }
+
+  System.out.print(s"${Calendar.getInstance().getTimeZone}")
+  System.out.print(s"${Calendar.getInstance().getTime}")
 
   IO(Http).ask(Http.Bind(listener, interface = host, port = port))
     .mapTo[Http.Event]

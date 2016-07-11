@@ -1,5 +1,5 @@
 import org.joda.time.format._
-import org.joda.time.DateTime
+import org.joda.time.{DateTime, DateTimeZone}
 
 val fmt = new DateTimeFormatterBuilder()
   .appendLiteral("log-")
@@ -10,3 +10,8 @@ val fmt = new DateTimeFormatterBuilder()
   .appendDayOfMonth(2)
   .toFormatter
 DateTime.now().toString(fmt)
+
+
+DateTime.now()
+DateTime.now(DateTimeZone.forID("Asia/Taipei"))
+DateTime.now(DateTimeZone.forID("Asia/Tokyo"))

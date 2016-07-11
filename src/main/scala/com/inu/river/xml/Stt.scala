@@ -76,7 +76,7 @@ object Stt {
       case Some(dt) if dt.text.trim.isEmpty => Left(new Exception(s"'$attribute' value is empty"))
       case Some(dt) => try {
         import org.joda.time.format._
-        Right(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime(dt.text.trim).withZone(DateTimeZone.forID("Asia/Taipei")))
+        Right(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime(dt.text.trim))
       }
       catch {
         case e: IllegalArgumentException => Left(e)

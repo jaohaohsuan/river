@@ -81,7 +81,7 @@ trait XmlUploadService extends Directives {
         val conversationInfo = ("callDirection" -> callDirection) ~~
                                ("customerPhoneNo" -> customerPhoneNo) ~~
                                ("customerGender" -> customerGender)
-
+ 
         val extra = decomposeDate(start, end) ~~ audioInfo ~~ userInfo ~~ conversationInfo
         indexName :: toJson(roles).merge(toJson(Dialogs(mixed) :: Nil)).merge(toJson(Vtt(mixed) :: Nil)).merge(extra) :: HNil
       }
