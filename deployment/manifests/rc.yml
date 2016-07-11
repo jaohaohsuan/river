@@ -19,7 +19,7 @@ spec:
       - name: river
         image: 127.0.0.1:5000/inu/river:${version}
         args:
-          - -Duser.timezone=Asia/Taipei
+          - "-Duser.timezone=Asia/Taipei"
         ports:
           - containerPort: 7879
         livenessProbe:

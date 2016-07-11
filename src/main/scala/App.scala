@@ -1,7 +1,7 @@
 package com.inu.river
 
 import java.net.InetAddress
-import java.util.Calendar
+import java.util.{Calendar, TimeZone}
 
 import scala.concurrent.duration._
 import akka.actor.{ActorSystem, Props}
@@ -50,7 +50,9 @@ object Main extends App {
     system.shutdown()
   }
 
-  System.out.print(s"${Calendar.getInstance().getTimeZone}")
+  TimeZone.setDefault(TimeZone.getTimeZone("Asia/Taipei"))
+
+  System.out.print(s"${Calendar.getInstance().getTimeZone}\n")
   System.out.print(s"${Calendar.getInstance().getTime}")
 
   IO(Http).ask(Http.Bind(listener, interface = host, port = port))
