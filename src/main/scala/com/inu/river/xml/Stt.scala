@@ -1,6 +1,6 @@
 package com.inu.river.xml
 
-import org.joda.time.DateTime
+import org.joda.time.{DateTime, DateTimeZone}
 import org.joda.time.format.DateTimeFormatterBuilder
 
 import scala.xml.{Elem, Node, NodeSeq}
@@ -76,7 +76,7 @@ object Stt {
       case Some(dt) if dt.text.trim.isEmpty => Left(new Exception(s"'$attribute' value is empty"))
       case Some(dt) => try {
         import org.joda.time.format._
-        Right(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime(dt.text.trim))
+        Right(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime(dt.text.trim).withZone(DateTimeZone.forID("Asia/Taipei")))
       }
       catch {
         case e: IllegalArgumentException => Left(e)
