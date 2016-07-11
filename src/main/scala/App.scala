@@ -14,7 +14,7 @@ import akka.util.Timeout
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse
 import org.elasticsearch.client.transport.TransportClient
 import org.elasticsearch.common.transport.InetSocketTransportAddress
-import org.joda.time.DateTime
+import org.joda.time.{DateTime, DateTimeZone}
 
 
 object Main extends App {
@@ -50,10 +50,12 @@ object Main extends App {
     system.shutdown()
   }
 
-  TimeZone.setDefault(TimeZone.getTimeZone("Asia/Taipei"))
 
-  System.out.print(s"${Calendar.getInstance().getTimeZone}\n")
-  System.out.print(s"${Calendar.getInstance().getTime}")
+  System.out.print(s"origin: ${DateTimeZone.getDefault}\n")
+  System.out.print(s"${DateTime.now}\n")
+  DateTimeZone.setDefault(DateTimeZone.forID("Asia/Taipei"))
+  System.out.print(s"after set timezone: ${DateTimeZone.getDefault}\n")
+  System.out.print(s"${DateTime.now}\n")
 
   IO(Http).ask(Http.Bind(listener, interface = host, port = port))
     .mapTo[Http.Event]
