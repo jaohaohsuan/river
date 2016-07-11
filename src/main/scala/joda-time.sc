@@ -12,6 +12,7 @@ val fmt = new DateTimeFormatterBuilder()
 DateTime.now().toString(fmt)
 
 
-DateTime.now()
+DateTime.now().toDateTime(DateTimeZone.UTC).withZone(DateTimeZone.forID("Asia/Taipei"))
+
 DateTime.now(DateTimeZone.forID("Asia/Taipei"))
 DateTime.now(DateTimeZone.forID("Asia/Tokyo"))
