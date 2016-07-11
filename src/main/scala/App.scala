@@ -14,6 +14,7 @@ import akka.util.Timeout
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse
 import org.elasticsearch.client.transport.TransportClient
 import org.elasticsearch.common.transport.InetSocketTransportAddress
+import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTime, DateTimeZone}
 
 
@@ -50,12 +51,8 @@ object Main extends App {
     system.shutdown()
   }
 
-
-  System.out.print(s"origin: ${DateTimeZone.getDefault}\n")
-  System.out.print(s"${DateTime.now}\n")
-  DateTimeZone.setDefault(DateTimeZone.forID("Asia/Taipei"))
-  System.out.print(s"after set timezone: ${DateTimeZone.getDefault}\n")
-  System.out.print(s"${DateTime.now}\n")
+  System.out.print("time zone eval: 2016-06-28 14:41:18 -> ")
+  System.out.print(s"${DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime("2016-06-28 14:41:18").toString("yyyy-MM-dd HH:mm:ssZ")}\n")
 
   IO(Http).ask(Http.Bind(listener, interface = host, port = port))
     .mapTo[Http.Event]
