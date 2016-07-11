@@ -62,7 +62,8 @@ dockerRepository := Some("127.0.0.1:5000/inu")
 dockerCommands := Seq(
   Cmd("FROM", "java:8-jdk-alpine"),
   Cmd("MAINTAINER", maintainer.value),
-  ExecCmd("RUN", "apk", "add", "--no-cache", "bash"),
+  ExecCmd("RUN", "apk", "add", "--no-cache", "bash", "tzdata"),
+  Cmd("ENV", "TZ Asia/Taipei"),
   Cmd("WORKDIR", "/opt/docker"),
   Cmd("ADD", "opt /opt"),
   ExecCmd("RUN", "chown", "-R", "daemon:daemon", "."),
