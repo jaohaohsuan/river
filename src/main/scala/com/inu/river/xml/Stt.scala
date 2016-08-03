@@ -3,6 +3,7 @@ package com.inu.river.xml
 import org.joda.time.{DateTime, DateTimeZone}
 import org.joda.time.format.DateTimeFormatterBuilder
 
+import scala.collection.immutable.Stream.Empty
 import scala.xml.{Elem, Node, NodeSeq}
 
 /**
@@ -10,10 +11,51 @@ import scala.xml.{Elem, Node, NodeSeq}
   */
 
 case class Role(name: String, sentences: Seq[Sentence])
+
 case class Dialogs(sentences: Seq[Sentence])
+
 case class Vtt(sentences: Seq[Sentence])
 
 case class Sentence(id: String, text: String, times: Seq[Int], role: String)
+
+case class Duration(begin: Int, end: Int) {
+  lazy val len = end - begin
+}
+
+object DurationElem {
+
+  object Role {
+
+    val num = """^[1-9]\d*$""".r
+
+    def unapply(arg: Elem): Option[(String, List[Duration])] = {
+      for {
+        attr <- arg.attributes.get("Name")
+        rN = attr.text.trim()
+        durations: Seq[Duration] = (arg \\ "Item").map { case Item(begin, end) => Duration(0, 0) }
+        if durations.nonEmpty
+      } yield (rN, durations.toList)
+    }
+
+    object Item {
+      def unapply(arg: Elem): Option[(Int, Int)] = {
+        for {
+          begin <- arg.attributes.get("Begin")
+          end <- arg.attributes.get("End")
+
+        } yield (toIntFail0(begin), toIntFail0(end))
+      }
+
+      def toIntFail0(attr: Seq[Node]) = {
+        val value = attr.text.trim
+        value match {
+          case num() => value.toInt
+          case _ => 0
+        }
+      }
+    }
+  }
+}
 
 object Element {
 
@@ -28,7 +70,7 @@ object Element {
         rN = attr.text.trim()
         id = rN match {
           case agentRole() => "agent0"
-          case customerRole()  => "customer0"
+          case customerRole() => "customer0"
           case _ => ""
         }
         if id.nonEmpty
@@ -39,15 +81,16 @@ object Element {
 
     object Item {
       def unapply(arg: Node): Option[(String, Seq[Int])] =
-      (for {
-        literal <- """\d+""".r findAllIn (arg \ "Time").text
-        if !literal.isEmpty
-        num = literal.toInt
-      } yield num).toSeq match {
-        case Nil => None
-        case times => Some(((arg \ "Text").text, times))
-      }
+        (for {
+          literal <- """\d+""".r findAllIn (arg \ "Time").text
+          if !literal.isEmpty
+          num = literal.toInt
+        } yield num).toSeq match {
+          case Nil => None
+          case times => Some(((arg \ "Text").text, times))
+        }
     }
+
   }
 
 }
@@ -61,12 +104,25 @@ object Stt {
       case Some(ns) => Right(ns)
     }
 
+  def getNode(name: String)(implicit ns: NodeSeq): Exception Either Node =
+    ns \\ "Subject" find { n => (n \ "@Name").text == name } match {
+      case None => Left(new Exception("There is no element like: '<Subject Name=\"$name\">'"))
+      case Some(ns) => Right(ns)
+    }
+
   def getRoles(node: Node): Exception Either List[Role] = {
     node.child.collect { case Element.Role(name, sentences) => Role(name, sentences) } match {
-      case Nil  => Left(new Exception("No Roles! Nonsense"))
+      case Nil => Left(new Exception("No Roles! Nonsense"))
       case roles =>
         //Role("dialogs", roles.flatMap{ e => e.sentences }.sortBy { case Sentence(_, _, x :: xs) => x })
         Right(roles.toList)
+    }
+  }
+
+  def getDurations(node: Node): Exception Either Seq[(String, List[Duration])] = {
+    node.child.collect { case DurationElem.Role(rN, x :: xs) => (rN, xs) } match {
+      case Nil => Right(Nil)
+      case list => Right(list)
     }
   }
 
@@ -86,7 +142,7 @@ object Stt {
   }
 
   def getUserInfo(ns: NodeSeq, elementName: String): Exception Either String = {
-     ns \\ "USER_INFO" \ elementName headOption match {
+    ns \\ "USER_INFO" \ elementName headOption match {
       case None => Right("")
       case Some(el) => Right(el.text.trim())
     }
@@ -124,16 +180,17 @@ object Stt {
   def asIndex(date: DateTime): Exception Either String = {
     val fmt = new DateTimeFormatterBuilder()
       .appendLiteral("logs-")
-      .appendYear(4,4)
+      .appendYear(4, 4)
       .appendLiteral('.')
       .appendMonthOfYear(2)
       .appendLiteral('.')
       .appendDayOfMonth(2)
       .toFormatter
 
-     if ("""^logs-\d{4}\.\d{2}\.\d{2}$""".r.pattern.matcher(date.toString(fmt)).matches)
-       Right(date.toString(fmt))
-     else
+    if (
+      """^logs-\d{4}\.\d{2}\.\d{2}$""".r.pattern.matcher(date.toString(fmt)).matches)
+      Right(date.toString(fmt))
+    else
       Left(new Exception(s"$date mismatching 'logs-yyyy.MM.dd'"))
   }
 

@@ -51,29 +51,44 @@ trait XmlUploadService extends Directives {
           ("monthDay"  -> start.getDayOfMonth)
       }
 
-      val combined = ns.reduce(_ ++ _)
+      implicit val combined = ns.reduce(_ ++ _)
       val result = for {
-        node            <- getRecognizeTextNode(combined).right
-        roles           <- getRoles(node).right
-        start           <- getDateTime(combined, "START_DATETIME").right
-        end             <- getDateTime(combined, "END_DATETIME").right
-        length          <- getAudioDuration(combined).right
-        agentPhoneNo    <- getAudioInfo(combined, "OPERATOR_PHONENUMBER").right
-        endStatus       <- getAudioInfo(combined, "CONVERSATION_END_STATUS_TYPE_CD").right
-        projectName     <- getAudioInfo(combined, "PROJECT_NAME").right
-        agentId         <- getUserInfo(combined, "USER_ID").right
-        agentName       <- getUserInfo(combined, "USER_NAME").right
-        callDirection   <- getConversationInfo(combined, "amivoice.common.direction").right
-        customerPhoneNo <- getConversationInfo(combined, "amivoice.common.customer.phonenumber").right
-        customerGender  <- getConversationInfo(combined, "amivoice.common.customer.gender").right
-        indexName       <- asIndex(start).right
-        mixed           <- Right(roles.flatMap { r => r.sentences }.sortBy { case Sentence(_, _, begin +: _, _) => begin }).right
+        recognizeTextNode <- getRecognizeTextNode(combined).right
+        silenceNode       <- getNode("Silence").right
+        silences          <- getDurations(silenceNode).right
+        interruptionNode  <- getNode("Interruption").right
+        interruptions     <- getDurations(interruptionNode).right
+        roles             <- getRoles(recognizeTextNode).right
+        start             <- getDateTime(combined, "START_DATETIME").right
+        end               <- getDateTime(combined, "END_DATETIME").right
+        length            <- getAudioDuration(combined).right
+        agentPhoneNo      <- getAudioInfo(combined, "OPERATOR_PHONENUMBER").right
+        endStatus         <- getAudioInfo(combined, "CONVERSATION_END_STATUS_TYPE_CD").right
+        projectName       <- getAudioInfo(combined, "PROJECT_NAME").right
+        agentId           <- getUserInfo(combined, "USER_ID").right
+        agentName         <- getUserInfo(combined, "USER_NAME").right
+        callDirection     <- getConversationInfo(combined, "amivoice.common.direction").right
+        customerPhoneNo   <- getConversationInfo(combined, "amivoice.common.customer.phonenumber").right
+        customerGender    <- getConversationInfo(combined, "amivoice.common.customer.gender").right
+        indexName         <- asIndex(start).right
+        mixed             <- Right(roles.flatMap { r => r.sentences }.sortBy { case Sentence(_, _, begin +: _, _) => begin }).right
       } yield {
         import org.json4s.JsonDSL._
-        val audioInfo: JObject = ("length" -> length) ~~
-                                 ("endStatus" -> endStatus) ~~
-                                 ("projectName" -> projectName) ~~
-                                 ("agentPhoneNo" -> agentPhoneNo)
+
+       val longestMixedSilence = silences.filter{ case (name, durations) => name == "mix" }
+         .map { case (_, durations) => durations.map(_.len).max }
+
+       val (interruptionInfo, r0r1TotalInterruptionLen) = interruptions.foldLeft((JObject(Nil), 0)){ case ((json, r0r1), (rN, durations)) =>
+         val sum = durations.map(_.len).sum
+         (json ~~ (s"${rN.toLowerCase}TotalInterruption" -> sum), r0r1 + sum)
+       }
+
+        val audioInfo: JObject = (("length" -> length) ~~
+                                  ("endStatus" -> endStatus) ~~
+                                  ("projectName" -> projectName) ~~
+                                  ("agentPhoneNo" -> agentPhoneNo) ~~
+                                  ("mixLongestSilence" -> longestMixedSilence))
+          .merge(interruptionInfo ~~ ("sumTotalInterruption" -> r0r1TotalInterruptionLen))
 
         val userInfo = ("agentId" -> agentId) ~~
                        ("agentName" -> agentName)
