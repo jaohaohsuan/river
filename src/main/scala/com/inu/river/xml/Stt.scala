@@ -106,7 +106,7 @@ object Stt {
 
   def getNode(name: String)(implicit ns: NodeSeq): Exception Either Node =
     ns \\ "Subject" find { n => (n \ "@Name").text == name } match {
-      case None => Left(new Exception("There is no element like: '<Subject Name=\"$name\">'"))
+      case None => Left(new Exception(s"""There is no element like: '<Subject Name="$name">'"""))
       case Some(ns) => Right(ns)
     }
 
