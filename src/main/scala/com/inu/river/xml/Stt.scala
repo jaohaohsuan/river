@@ -32,7 +32,7 @@ object DurationElem {
       for {
         attr <- arg.attributes.get("Name")
         rN = attr.text.trim()
-        durations: Seq[Duration] = (arg \\ "Item").map { case Item(begin, end) => Duration(0, 0) }
+        durations: Seq[Duration] = (arg \\ "Item").map { case Item(begin, end) => Duration(begin, end) }
         if durations.nonEmpty
       } yield (rN, durations.toList)
     }

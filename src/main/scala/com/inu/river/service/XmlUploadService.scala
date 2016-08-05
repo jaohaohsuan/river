@@ -76,7 +76,7 @@ trait XmlUploadService extends Directives {
         import org.json4s.JsonDSL._
 
        val longestMixedSilence = silences.filter{ case (name, durations) => name == "mix" }
-         .map { case (_, durations) => durations.map(_.len).max }
+         .map { case (_, durations) => durations.map(_.len).max }.headOption.getOrElse(0)
 
        val (interruptionInfo, r0r1TotalInterruptionLen) = interruptions.foldLeft((JObject(Nil), 0)){ case ((json, r0r1), (rN, durations)) =>
          val sum = durations.map(_.len).sum
