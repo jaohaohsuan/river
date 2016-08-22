@@ -42,26 +42,26 @@ class HttpService(val client: org.elasticsearch.client.Client) extends HttpServi
         complete(OK, "pong")
       }
     } ~
-      path("stt" / Segment / Segment ) { (dataSource, uuid) =>
-        put {
-          //authenticate(BasicAuth("sk")) { usr =>
-            SttDoc { (index, doc) =>
-              respondWithHeader(RawHeader("Content-Location", s"$index/$uuid")) {
-                respondWithMediaType(`application/json`) {
-                  parameters('dry ! "true") {
-                      complete(OK,doc)
-                  } ~
-                  onComplete(write(compact(render(doc)), index, dataSource, s"$uuid")) {
-                    case scala.util.Success(res) => complete(OK, ("acknowledged" -> true) ~~
-                      ("created"      -> res.isCreated))
-                    case Failure(ex) => complete(BadRequest, "error" -> ("title"   -> "prepareUpdate") ~~
-                      ("message" -> ex.getMessage))
-                  }
+    path("stt" / Segment / Segment ) { (dataSource, uuid) =>
+      put {
+        //authenticate(BasicAuth("sk")) { usr =>
+          SttDoc { (index, doc) =>
+            respondWithHeader(RawHeader("Content-Location", s"$index/$uuid")) {
+              respondWithMediaType(`application/json`) {
+                parameters('dry ! "true") {
+                    complete(OK,doc)
+                } ~
+                onComplete(write(compact(render(doc)), index, dataSource, s"$uuid")) {
+                  case scala.util.Success(res) => complete(OK, ("acknowledged" -> true) ~~
+                    ("created"      -> res.isCreated))
+                  case Failure(ex) => complete(BadRequest, "error" -> ("title"   -> "prepareUpdate") ~~
+                    ("message" -> ex.getMessage))
                 }
               }
             }
-            //}
-        }
+          }
+          //}
       }
+    }
   }
 }

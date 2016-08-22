@@ -119,8 +119,15 @@ object Stt {
     }
   }
 
-  def getDurations(node: Node): Exception Either Seq[(String, List[Duration])] = {
+  def getDurationsWithoutHead(node: Node): Exception Either Seq[(String, List[Duration])] = {
     node.child.collect { case DurationElem.Role(rN, x :: xs) => (rN, xs) } match {
+      case Nil => Right(Nil)
+      case list => Right(list)
+    }
+  }
+
+  def getDurations(node: Node): Exception Either Seq[(String, List[Duration])] = {
+    node.child.collect { case DurationElem.Role(rN, ls) => (rN, ls) } match {
       case Nil => Right(Nil)
       case list => Right(list)
     }

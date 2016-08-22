@@ -2,10 +2,12 @@ package com.inu.river.service
 
 import com.inu.river.xml.{Dialogs, JSONValue, Sentence, Vtt}
 import org.joda.time.DateTime
+import org.json4s.JsonAST.JValue
 import spray.http.{BodyPart, ContentType, HttpEntity, MultipartContent}
 import spray.httpx.unmarshalling.{BasicUnmarshallers, ContentExpected, DeserializationError, MalformedContent, UnsupportedContentType}
 import spray.routing._
 import spray.http.HttpCharsets._
+
 
 import scala.util.Either
 import scala.xml.NodeSeq
@@ -55,7 +57,7 @@ trait XmlUploadService extends Directives {
       val result = for {
         recognizeTextNode <- getRecognizeTextNode(combined).right
         silenceNode       <- getNode("Silence").right
-        silences          <- getDurations(silenceNode).right
+        silences          <- getDurationsWithoutHead(silenceNode).right
         interruptionNode  <- getNode("Interruption").right
         interruptions     <- getDurations(interruptionNode).right
         roles             <- getRoles(recognizeTextNode).right
